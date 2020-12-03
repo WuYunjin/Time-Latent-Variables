@@ -17,7 +17,7 @@ from helpers.config_utils import save_yaml_config, get_args
 from helpers.log_helper import LogHelper
 from helpers.torch_utils import set_seed
 from helpers.dir_utils import create_dir
-from helpers.analyze_utils import  plot_timeseries, plot_losses, plot_recovered_graph, F1
+from helpers.analyze_utils import  plot_timeseries, plot_losses, plot_recovered_graph, plot_ROC_curve, AUC_score
 
 
 def main():
@@ -64,14 +64,17 @@ def main():
     estimate_A = model.posterior_A.probs[:,:args.num_X,:args.num_X].cpu().data.numpy() # model.posterior_A.probs is shape with (max_lag,num_X+num_Z,num_X+num_Z)
     groudtruth_A = np.array(dataset.groudtruth) # groudtruth is shape with (max_lag,num_X,num_X)
 
-    f1 = F1(estimate_A.T,groudtruth_A.T,threshold=args.threshold_A)
-    _logger.info(f1)
+    AUC = AUC_score(estimate_A.T,groudtruth_A.T)
+    _logger.info('AUC Score :{}'.format(AUC))
+
+    plot_ROC_curve(estimate_A.T,groudtruth_A.T,display_mode=True,save_name=output_dir+'/ROC_Curve.png')
     
     
     # Visualizations
+    # estimate_A= (abs(estimate_A)> args.threshold_A).astype(int)
     for k in range(args.max_lag):
         # Note that in our implementation, A_ij=1 means j->i, but in the plot_recovered_graph A_ij=1 means i->j, so transpose A
-        plot_recovered_graph(estimate_A[k].T,groudtruth_A[k].T,title='Lag = {}'.format(k),display_mode=False,save_name=output_dir+'/lag_{}.png'.format(k))
+        plot_recovered_graph(estimate_A[k].T,groudtruth_A[k].T,title='Lag = {}'.format(k+1),display_mode=True,save_name=output_dir+'/lag_{}.png'.format(k))
 
 
     # Save the configuration for logging purpose

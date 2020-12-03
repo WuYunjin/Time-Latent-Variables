@@ -39,6 +39,9 @@ class Trainer(object):
                 self._logger.info("Iteration {} , loss:{}".format(iteration,loss.item()))
 
             with torch.no_grad():
+                # model.posterior_A.probs should  >=0, but after the gradient decent  it may lead to <0 and therefore we clamp it.
+                model.posterior_A.probs.data = torch.clamp(model.posterior_A.probs,min=0.0)
+
                 # replace the nan in W, maybe unnecessary
                 for i in range(m):
                     tmp = model.posterior_W.scale[:,m+i,m+i].clone().detach()

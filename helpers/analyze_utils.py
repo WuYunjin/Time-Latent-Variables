@@ -6,12 +6,13 @@ def plot_timeseries(data,title, display_mode=False ,save_name=None):
     # data is a numpy array with shape (T,N)
     N = data.shape[1]
     fig, axes = plt.subplots(N, sharex=True)
+    axes[0].set_title(title)
     if N<2:
         axes.plot(data)
     else:
         for j in range(N):
             axes[j].plot(data[:,j])
-    plt.title(title)
+    
 
     if save_name is not None:
         fig.savefig(save_name)
@@ -22,12 +23,13 @@ def plot_timeseries(data,title, display_mode=False ,save_name=None):
     
 
 def plot_losses(data, display_mode=False ,save_name=None):
-    plt.xlabel('Iteration')
-    plt.ylabel('Loss')
-    plt.plot(data)
+    fig, ax = plt.subplots()  
+    ax.set_xlabel('Iteration')
+    ax.set_ylabel('Loss')
+    ax.plot(data)
 
     if save_name is not None:
-        plt.savefig(save_name)
+        fig.savefig(save_name)
 
     if display_mode:
         plt.show()
@@ -49,13 +51,13 @@ def plot_recovered_graph(W_est, W, title=None, display_mode=False ,save_name=Non
     ax1.set_xlabel('Effects')
     ax1.set_ylabel('Causes')
     map1 = ax1.imshow(W_est, cmap='Blues', interpolation='none')
-    # fig.colorbar(map1, ax=ax1)
+    fig.colorbar(map1, ax=ax1)
 
     ax2.set_title('true_graph')
     ax2.set_xlabel('Effects')
     ax2.set_ylabel('Causes')
     map2 = ax2.imshow(W, cmap='Blues', interpolation='none')
-    # fig.colorbar(map2, ax=ax2)
+    fig.colorbar(map2, ax=ax2)
 
     
     fig.subplots_adjust(wspace=0.3)
@@ -69,6 +71,38 @@ def plot_recovered_graph(W_est, W, title=None, display_mode=False ,save_name=Non
     if display_mode:
         plt.show()
         plt.close()
+
+def plot_ROC_curve(A_est, A_true,display_mode=False,save_name=None):
+    # Referred from :https://blog.csdn.net/hesongzefairy/article/details/104302499 
+    # and https://scikit-learn.org/stable/auto_examples/model_selection/plot_roc.html#sphx-glr-auto-examples-model-selection-plot-roc-py
+    from sklearn.metrics import roc_curve, auc
+    fpr, tpr, thresholds = roc_curve(A_true.reshape(1,-1)[0], A_est.reshape(1,-1)[0], pos_label=1)
+    
+    roc_auc = auc(fpr, tpr)
+    
+    
+    fig, ax = plt.subplots()  
+    ax.plot(fpr, tpr, color='darkorange',label='ROC curve (area = {0:.2f})'.format(roc_auc), lw=2)
+    ax.plot([0, 1], [0, 1], color='navy', lw=2, linestyle='--')
+    ax.set_xlabel('False Positive Rate')
+    ax.set_ylabel('True Positive Rate')
+    ax.set_xlim([-0.05,1.05])
+    ax.set_ylim([-0.05,1.05])
+    ax.set_title('ROC Curve')
+    ax.legend(loc="lower right")
+
+
+    if save_name is not None:
+        fig.savefig(save_name)
+        
+    if display_mode:
+        plt.show()
+        plt.close()
+
+def AUC_score(A_est, A_true):
+    from sklearn.metrics import roc_auc_score
+    return roc_auc_score(A_true.reshape(1,-1)[0], A_est.reshape(1,-1)[0])
+
 
 
 def F1(A_est, A_true, threshold):

@@ -44,7 +44,7 @@ def get_args():
 
     parser.add_argument('--num_samples',
                         type=int,
-                        default=1000,
+                        default=2000,
                         help='Number of sample size') # different sample size may need a different learning rate to train.
     
     parser.add_argument('--max_lag',
@@ -57,7 +57,7 @@ def get_args():
     ##### Model settings #####
     parser.add_argument('--prior_rho_A',
                         type=float,
-                        default=0.1,
+                        default=0.5,
                         help='the parameter of Bernoulli distribution, which is the prior over A_k,ij')
 
     parser.add_argument('--prior_sigma_W',
@@ -96,7 +96,7 @@ def get_args():
 
     parser.add_argument('--num_iterations',
                         type=int,
-                        default=1000,
+                        default=2000,
                         help='Number of iterations')
 
     parser.add_argument('--num_output',
