@@ -28,7 +28,7 @@ def get_args():
                         help='Random seed')
 
     parser.add_argument('--device',
-                        default=get_device(),
+                        default=get_device(2),
                         help='Running device')
 
     ##### Dataset settings #####
@@ -96,7 +96,7 @@ def get_args():
 
     parser.add_argument('--num_iterations',
                         type=int,
-                        default=2000,
+                        default=3000,
                         help='Number of iterations')
 
     parser.add_argument('--num_output',

@@ -200,7 +200,7 @@ class TimeLatent(object):
             Sum_X_mu += ((X[t-1]-mu)**2).sum()
 
 
-        return  -T/2* torch.log(2* torch.tensor([np.math.pi])) - T/2* torch.log( sigma*sigma ).sum() - 1/( 2*(sigma*sigma).sum()) *Sum_X_mu
+        return  -T/2* torch.log(2* torch.tensor([np.math.pi],device=self.device)) - T/2* torch.log( sigma*sigma ).sum() - 1/( 2*(sigma*sigma).sum()) *Sum_X_mu
 
 
     

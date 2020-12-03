@@ -67,14 +67,14 @@ def main():
     AUC = AUC_score(estimate_A.T,groudtruth_A.T)
     _logger.info('AUC Score :{}'.format(AUC))
 
-    plot_ROC_curve(estimate_A.T,groudtruth_A.T,display_mode=True,save_name=output_dir+'/ROC_Curve.png')
+    plot_ROC_curve(estimate_A.T,groudtruth_A.T,display_mode=False,save_name=output_dir+'/ROC_Curve.png')
     
     
     # Visualizations
     # estimate_A= (abs(estimate_A)> args.threshold_A).astype(int)
     for k in range(args.max_lag):
         # Note that in our implementation, A_ij=1 means j->i, but in the plot_recovered_graph A_ij=1 means i->j, so transpose A
-        plot_recovered_graph(estimate_A[k].T,groudtruth_A[k].T,title='Lag = {}'.format(k+1),display_mode=True,save_name=output_dir+'/lag_{}.png'.format(k))
+        plot_recovered_graph(estimate_A[k].T,groudtruth_A[k].T,title='Lag = {}'.format(k+1),display_mode=False,save_name=output_dir+'/lag_{}.png'.format(k))
 
 
     # Save the configuration for logging purpose
