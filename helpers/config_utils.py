@@ -57,7 +57,7 @@ def get_args():
     ##### Model settings #####
     parser.add_argument('--prior_rho_A',
                         type=float,
-                        default=0.7,
+                        default=0.6,
                         help='the parameter of Bernoulli distribution, which is the prior over A_k,ij')
 
     parser.add_argument('--prior_sigma_W',
