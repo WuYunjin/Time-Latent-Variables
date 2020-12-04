@@ -12,7 +12,7 @@ def is_cuda_available():
 def get_device(cuda_number=0):
     """cuda_number : set the number of CUDA, default 0"""
 
-    return torch.device('cuda:{}'.format(cuda_number) if torch.cuda.is_available() else 'cpu')
+    return torch.device('cpu')#('cuda:{}'.format(cuda_number) if torch.cuda.is_available() else 'cpu')
 
 
 def set_seed(seed):

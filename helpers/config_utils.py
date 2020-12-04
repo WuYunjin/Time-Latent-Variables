@@ -28,7 +28,7 @@ def get_args():
                         help='Random seed')
 
     parser.add_argument('--device',
-                        default=get_device(2),
+                        default=get_device(),
                         help='Running device')
 
     ##### Dataset settings #####
@@ -44,7 +44,7 @@ def get_args():
 
     parser.add_argument('--num_samples',
                         type=int,
-                        default=2000,
+                        default=500,
                         help='Number of sample size') # different sample size may need a different learning rate to train.
     
     parser.add_argument('--max_lag',
@@ -57,13 +57,13 @@ def get_args():
     ##### Model settings #####
     parser.add_argument('--prior_rho_A',
                         type=float,
-                        default=0.5,
+                        default=0.7,
                         help='the parameter of Bernoulli distribution, which is the prior over A_k,ij')
 
     parser.add_argument('--prior_sigma_W',
                         type=float,
                         default=1.0,
-                        help='the variance parameter of Normal distribution, which is the prior over W_k,ij')
+                        help='the standard deviation parameter of Normal distribution, which is the prior over W_k,ij')
 
     parser.add_argument('--temperature',
                         type=float,
@@ -73,17 +73,17 @@ def get_args():
     parser.add_argument('--sigma_Z',
                         type=float,
                         default=1.0,
-                        help='the variance parameter of Normal distribution over latent variables Z')
+                        help='the standard deviation parameter of Normal distribution over latent variables Z')
 
     parser.add_argument('--sigma_X',
                         type=float,
                         default=1.0,
-                        help='the variance parameter of Normal distribution over observed variables X')
+                        help='the standard deviation parameter of Normal distribution over observed variables X')
 
-    parser.add_argument('--threshold_A',
-                        type=float,
-                        default=0.1,
-                        help='the threshold parameter of determinating whether there is a edge from i to j')
+    # parser.add_argument('--threshold_A',
+    #                     type=float,
+    #                     default=0.1,
+    #                     help='the threshold parameter of determinating whether there is a edge from i to j')
 
                 
     
@@ -96,7 +96,7 @@ def get_args():
 
     parser.add_argument('--num_iterations',
                         type=int,
-                        default=3000,
+                        default=2000,
                         help='Number of iterations')
 
     parser.add_argument('--num_output',

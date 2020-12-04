@@ -80,7 +80,7 @@ class SyntheticDataset(object):
                 np.concatenate((A_zx,A_zz),axis=1) ), axis=0) 
             A.append(tmp_A)
             
-            tmp_W = np.random.rand(num_X+num_Z,num_X+num_Z) * tmp_A
+            tmp_W = np.random.randn(num_X+num_Z,num_X+num_Z) * tmp_A
             # tmp_W = np.random.normal(loc = np.zeros((num_X+num_Z,num_X+num_Z)), scale = np.ones((num_X+num_Z,num_X+num_Z))) * tmp_A
 
             W.append(tmp_W)

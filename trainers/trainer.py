@@ -31,7 +31,7 @@ class Trainer(object):
             loss.backward(retain_graph=True)
 
             # Clipping Gradient for parameters
-            clip_grad_value_([model.posterior_A.probs, model.posterior_W.loc ,model.posterior_W.scale],clip_value=2.0)
+            clip_grad_value_([model.posterior_A.probs, model.posterior_W.loc ,model.posterior_W.scale],clip_value=1.0)
 
             optimizer.step()
             train_losses.append(loss.item())
@@ -40,18 +40,20 @@ class Trainer(object):
 
             with torch.no_grad():
                 # model.posterior_A.probs should  >=0, but after the gradient decent  it may lead to <0 and therefore we clamp it.
-                model.posterior_A.probs.data = torch.clamp(model.posterior_A.probs,min=0.0)
+                model.posterior_A.probs.data = torch.clamp(model.posterior_A.probs,min=0.0,max=1.0)
+                
+                model.posterior_W.scale.data = torch.clamp(model.posterior_W.scale,min=0.0)
 
-                # replace the nan in W, maybe unnecessary
-                for i in range(m):
-                    tmp = model.posterior_W.scale[:,m+i,m+i].clone().detach()
-                    model.posterior_W.scale[:,m+i,:] = 0.0
-                    model.posterior_W.scale[:,m+i,m+i] = tmp
+                # # replace the nan in W, maybe unnecessary
+                # for i in range(m):
+                #     tmp = model.posterior_W.scale[:,m+i,m+i].clone().detach()
+                #     model.posterior_W.scale[:,m+i,:] = 0.0
+                #     model.posterior_W.scale[:,m+i,m+i] = tmp
 
-                    tmp = model.posterior_W.loc[:,m+i,m+i].clone().detach()
-                    model.posterior_W.loc[:,m+i,:] = 0.0
-                    model.posterior_W.loc[:,m+i,m+i] = tmp
-                # print('test')
+                #     tmp = model.posterior_W.loc[:,m+i,m+i].clone().detach()
+                #     model.posterior_W.loc[:,m+i,:] = 0.0
+                #     model.posterior_W.loc[:,m+i,m+i] = tmp
+                # # print('test')
                 
         self.train_losses = train_losses
         self.estimate_A = model.posterior_A.probs.cpu().data.numpy()
