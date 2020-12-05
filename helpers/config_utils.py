@@ -77,7 +77,7 @@ def get_args():
 
     parser.add_argument('--sigma_X',
                         type=float,
-                        default=1.0,
+                        default=0.1,
                         help='the standard deviation parameter of Normal distribution over observed variables X')
 
     # parser.add_argument('--threshold_A',
@@ -96,7 +96,7 @@ def get_args():
 
     parser.add_argument('--num_iterations',
                         type=int,
-                        default=2000,
+                        default=3500,
                         help='Number of iterations')
 
     parser.add_argument('--num_output',
