@@ -22,6 +22,7 @@ from helpers.analyze_utils import  plot_timeseries, plot_losses, plot_recovered_
 
 def main():
     np.set_printoptions(precision=3)
+    
     # Get arguments parsed
     args = get_args()
 
@@ -31,6 +32,10 @@ def main():
     LogHelper.setup(log_path='{}/training.log'.format(output_dir),
                     level_str='INFO')
     _logger = logging.getLogger(__name__)
+    
+    # Save the configuration for logging purpose
+    save_yaml_config(args, path='{}/config.yaml'.format(output_dir))
+
 
     # Reproducibility
     set_seed(args.seed)
@@ -43,8 +48,8 @@ def main():
 
     # Look at data
     _logger.info('The shape of observed data: {}'.format(dataset.X.shape))
-    plot_timeseries(dataset.X[0:100],'X',display_mode=False,save_name=output_dir+'/timeseries_X.png')
-    plot_timeseries(dataset.Z[0:100],'Z',display_mode=False,save_name=output_dir+'/timeseries_Z.png')
+    plot_timeseries(dataset.X[-150:],'X',display_mode=False,save_name=output_dir+'/timeseries_X.png')
+    plot_timeseries(dataset.Z[-150:],'Z',display_mode=False,save_name=output_dir+'/timeseries_Z.png')
 
     # Init model
     model = TimeLatent(args.num_X, args.max_lag, args.num_samples, args.device, args.prior_rho_A, args.prior_sigma_W, args.temperature, args.sigma_Z, args.sigma_X)
@@ -71,17 +76,14 @@ def main():
     plot_ROC_curve(estimate_A.T,groudtruth_A.T,display_mode=False,save_name=output_dir+'/ROC_Curve.png')
     
     for t in range(0,11):
-        print('Under threshold:',t/10)
-        print(F1(estimate_A.T,groudtruth_A.T,threshold=t/10))
+        _logger.info('Under threshold:{}'.format(t/10))
+        _logger.info(F1(estimate_A.T,groudtruth_A.T,threshold=t/10))
 
     # Visualizations
     for k in range(args.max_lag):
         # Note that in our implementation, A_ij=1 means j->i, but in the plot_recovered_graph A_ij=1 means i->j, so transpose A
         plot_recovered_graph(estimate_A[k].T,groudtruth_A[k].T,title='Lag = {}'.format(k+1),display_mode=False,save_name=output_dir+'/lag_{}.png'.format(k))
 
-
-    # Save the configuration for logging purpose
-    save_yaml_config(args, path='{}/config.yaml'.format(output_dir))
 
     _logger.info('All Finished!')
 

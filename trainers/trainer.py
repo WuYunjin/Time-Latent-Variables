@@ -34,7 +34,12 @@ class Trainer(object):
             clip_grad_value_([model.posterior_A.probs, model.posterior_W.loc ,model.posterior_W.scale],clip_value=1.0)
 
             optimizer.step()
+            if torch.isnan(loss): # if loss is NAN, break
+                self._logger.info("!!!! Loss is NAN, check the generated data and configuration.")
+                break
+
             train_losses.append(loss.item())
+
             if(iteration% self.num_output==0):
                 self._logger.info("Iteration {} , loss:{}".format(iteration,loss.item()))
 
