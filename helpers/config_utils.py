@@ -44,7 +44,7 @@ def get_args():
 
     parser.add_argument('--num_samples',
                         type=int,
-                        default=1500,
+                        default=1000,
                         help='Number of sample size') # different sample size may need a different learning rate to train.
     
     parser.add_argument('--max_lag',
