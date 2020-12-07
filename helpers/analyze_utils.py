@@ -51,6 +51,10 @@ def plot_recovered_graph(W_est, W, title=None, display_mode=False ,save_name=Non
     ax1.set_xlabel('Effects')
     ax1.set_ylabel('Causes')
     map1 = ax1.imshow(W_est, cmap='Blues', interpolation='none')
+    for i in range(len(W_est)):
+        for j in range(len(W_est)):
+            text = ax1.text(j, i, round(W_est[i, j],2),
+                        ha="center", va="center", color="r")
     fig.colorbar(map1, ax=ax1)
 
     ax2.set_title('true_graph')
@@ -100,8 +104,17 @@ def plot_ROC_curve(A_est, A_true,display_mode=False,save_name=None):
         plt.close()
 
 def AUC_score(A_est, A_true):
-    from sklearn.metrics import roc_auc_score
-    return roc_auc_score(A_true.reshape(1,-1)[0], A_est.reshape(1,-1)[0])
+    from sklearn.metrics import roc_curve, auc
+    fpr, tpr, thresholds = roc_curve(A_true.reshape(1,-1)[0], A_est.reshape(1,-1)[0], pos_label=1)
+    
+    roc_auc = auc(fpr, tpr)
+
+    return {
+        'fpr': fpr,
+        'tpr': tpr,
+        'thresholds':thresholds,
+        'AUC': roc_auc
+    }
 
 
 
@@ -116,10 +129,10 @@ def F1(A_est, A_true, threshold):
     fp = confusion[0,1] 
     fn = confusion[1,0]
 
-    precision = tp/(tp+fp)
-    recall = tp/(tp+fn)
+    precision = tp/(tp+fp+ 1e-31) #in case divide 0
+    recall = tp/(tp+fn+ 1e-31) #in case divide 0
     # f1 = (2*precision*recall)/(precision+recall)
-    f1 = 2*tp/(2*tp+fp+fn)
+    f1 = 2*tp/(2*tp+fp+fn+ 1e-31) #in case divide 0
 
     return {
         'precision': precision,

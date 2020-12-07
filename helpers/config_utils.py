@@ -96,7 +96,7 @@ def get_args():
 
     parser.add_argument('--num_iterations',
                         type=int,
-                        default=3500,
+                        default=3000,
                         help='Number of iterations')
 
     parser.add_argument('--num_output',
