@@ -45,26 +45,41 @@ def plot_recovered_graph(W_est, W, title=None, display_mode=False ,save_name=Non
         W_est: predicted graph, W_est[i,j] means i->j.
 
     """
-    fig, (ax1, ax2) = plt.subplots(figsize=(10, 4), ncols=2)
+    if W:
+        fig, (ax1, ax2) = plt.subplots(figsize=(10, 4), ncols=2)
 
-    ax1.set_title('recovered_graph')
-    ax1.set_xlabel('Effects')
-    ax1.set_ylabel('Causes')
-    map1 = ax1.imshow(W_est, cmap='Blues', interpolation='none')
-    for i in range(len(W_est)):
-        for j in range(len(W_est)):
-            text = ax1.text(j, i, round(W_est[i, j],2),
-                        ha="center", va="center", color="r")
-    fig.colorbar(map1, ax=ax1)
+        ax1.set_title('recovered_graph')
+        ax1.set_xlabel('Effects')
+        ax1.set_ylabel('Causes')
+        map1 = ax1.imshow(W_est, cmap='Blues', interpolation='none')
+        for i in range(len(W_est)):
+            for j in range(len(W_est)):
+                text = ax1.text(j, i, round(W_est[i, j],2),
+                            ha="center", va="center", color="r")
+        fig.colorbar(map1, ax=ax1)
 
-    ax2.set_title('true_graph')
-    ax2.set_xlabel('Effects')
-    ax2.set_ylabel('Causes')
-    map2 = ax2.imshow(W, cmap='Blues', interpolation='none')
-    fig.colorbar(map2, ax=ax2)
+        ax2.set_title('true_graph')
+        ax2.set_xlabel('Effects')
+        ax2.set_ylabel('Causes')
+        map2 = ax2.imshow(W, cmap='Blues', interpolation='none')
+        fig.colorbar(map2, ax=ax2)
 
-    
-    fig.subplots_adjust(wspace=0.3)
+        
+        fig.subplots_adjust(wspace=0.3)
+
+    else:
+        fig, ax1 = plt.subplots(figsize=(10, 4), ncols=1)
+
+        ax1.set_title('recovered_graph')
+        ax1.set_xlabel('Effects')
+        ax1.set_ylabel('Causes')
+        map1 = ax1.imshow(W_est, cmap='Blues', interpolation='none')
+        for i in range(len(W_est)):
+            for j in range(len(W_est)):
+                text = ax1.text(j, i, round(W_est[i, j],2),
+                            ha="center", va="center", color="r")
+        fig.colorbar(map1, ax=ax1)
+        
     if title is not None:
         fig.suptitle(title)
 

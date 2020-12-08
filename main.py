@@ -9,6 +9,7 @@ import torch
 
 
 from data_loader.synthetic_dataset import SyntheticDataset
+from data_loader.real_dataset import RealDataset
 from models.TimeLatent import TimeLatent
 from trainers.trainer import Trainer
 
@@ -20,7 +21,8 @@ from helpers.dir_utils import create_dir
 from helpers.analyze_utils import  plot_timeseries, plot_losses, plot_recovered_graph, plot_ROC_curve, AUC_score, F1
 
 
-def main():
+def synthetic():
+    
     np.set_printoptions(precision=3)
     
     # Get arguments parsed
@@ -89,6 +91,72 @@ def main():
 
 
 
+def real():
+    
+    np.set_printoptions(precision=3)
+    
+    # Get arguments parsed
+    args = get_args()
+
+    # Setup for logging
+    output_dir = 'output/real_{}'.format(datetime.now(timezone('Asia/Shanghai')).strftime('%Y-%m-%d_%H-%M-%S-%f')[:-3])
+    create_dir(output_dir)
+    LogHelper.setup(log_path='{}/training.log'.format(output_dir),
+                    level_str='INFO')
+    _logger = logging.getLogger(__name__)
+    
+    # Save the configuration for logging purpose
+    save_yaml_config(args, path='{}/config.yaml'.format(output_dir))
+
+
+    # Reproducibility
+    set_seed(args.seed)
+
+    # Get dataset
+    dataset = RealDataset()
+
+    # Look at data
+    _logger.info('The shape of observed data: {}'.format(dataset.stock.shape))
+    plot_timeseries(dataset.stock[-150:],'stock',display_mode=False,save_name=output_dir+'/timeseries_stock.png')
+
+    # Set parameters
+    num_samples, num_X = dataset.stock.shape
+    temperature = 2.0
+    max_lag = 1
+    prior_rho_A = 0.5
+    prior_sigma_W = 1.0
+    sigma_Z = 1.0
+    sigma_X = 1.0
+    num_iterations = 2000
+
+    # Log the parameters
+    _logger.info("num_X:{},max_lag:{},num_samples:{},args.device:{},prior_rho_A:{},prior_sigma_W:{},temperature:{},sigma_Z:{},sigma_X:{},num_iterations:{}".format(num_X,max_lag,num_samples,args.device,prior_rho_A,prior_sigma_W,temperature,sigma_Z,sigma_X,num_iterations))
+    # Init model
+    model = TimeLatent(num_X=num_X,max_lag=max_lag,num_samples=num_samples,device=args.device,prior_rho_A=prior_rho_A,prior_sigma_W=prior_sigma_W,temperature=temperature,sigma_Z=sigma_Z,sigma_X=sigma_X)
+    trainer = Trainer(learning_rate=args.learning_rate, num_iterations=num_iterations,num_output=args.num_output)
+
+    trainer.train_model(model=model, X = torch.tensor(dataset.stock,dtype=torch.float32,device=args.device), output_dir=output_dir)
+
+    plot_losses(trainer.train_losses,display_mode=False,save_name=output_dir+'/loss.png')
+
+    # Save result
+    trainer.log_and_save_intermediate_outputs()
+
+    _logger.info('Finished training model')
+
+    
+    estimate_A = model.posterior_A.probs.cpu().data.numpy()
+
+    # Visualizations
+    for k in range(max_lag):
+        # Note that in our implementation, A_ij=1 means j->i, but in the plot_recovered_graph A_ij=1 means i->j, so transpose A
+        plot_recovered_graph(estimate_A[k].T,W=None,title='Lag = {}'.format(k+1),display_mode=False,save_name=output_dir+'/lag_{}.png'.format(k))
+
+    _logger.info('All Finished!')
+
+
 if __name__ == '__main__':
 
-    main()
+    synthetic()
+
+    # real()

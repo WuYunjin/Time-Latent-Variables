@@ -1,7 +1,7 @@
 # TODO
-|  num_X  | num_Z  | num_samples | max_lag| Highest AUC | Average AUC| Lowest AUC|
-|  ----   | ----   |  ----       | ----   |   ----      |     ----   |     ----  |
-|    5    |   5    |    1000     |   1    |          |
+|  num_X  | num_Z  | num_samples | max_lag| Highest AUC | Average AUC| Lowest AUC| AUCs(under 10 seeds) |
+|  ----   | ----   |  ----       | ----   |   ----      |     ----   |     ----  |       ----           |
+|    5    |   5    |    1000     |   1    |             |            |           |  0.7539<br>  0.7529<br>                |
 |   10    |   5    |    1000     |   1    |          |
 |   15    |   5    |    1000     |   1    |          |
 |   20    |   5    |    1000     |   1    |          |
