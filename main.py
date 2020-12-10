@@ -103,7 +103,7 @@ def real():
     create_dir(output_dir)
     LogHelper.setup(log_path='{}/training.log'.format(output_dir),
                     level_str='INFO')
-    _logger = logging.getLogger(__name__)
+    _logger = logging.getLogger('real')
     
     # Save the configuration for logging purpose
     save_yaml_config(args, path='{}/config.yaml'.format(output_dir))
@@ -123,11 +123,11 @@ def real():
     num_samples, num_X = dataset.stock.shape
     temperature = 2.0
     max_lag = 1
-    prior_rho_A = 0.5
-    prior_sigma_W = 1.0
+    prior_rho_A = 0.7
+    prior_sigma_W = 0.05
     sigma_Z = 1.0
-    sigma_X = 1.0
-    num_iterations = 2000
+    sigma_X = 0.05
+    num_iterations = 3000
 
     # Log the parameters
     _logger.info("num_X:{},max_lag:{},num_samples:{},args.device:{},prior_rho_A:{},prior_sigma_W:{},temperature:{},sigma_Z:{},sigma_X:{},num_iterations:{}".format(num_X,max_lag,num_samples,args.device,prior_rho_A,prior_sigma_W,temperature,sigma_Z,sigma_X,num_iterations))

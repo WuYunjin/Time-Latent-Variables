@@ -23,15 +23,15 @@
 
 # run this script with command: nohup bash run.sh &
 
-# for rho in  0.0 0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9 1.0
-# do
+for rho in  0.0 0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9 1.0
+do
         
-#     nohup python -u main.py --prior_rho_A $rho > nohup.txt 2>&1 &
-#     sleep 0.1
+    nohup python -u main.py --prior_rho_A $rho > nohup.txt 2>&1 &
+    sleep 0.1
     
-# done
+done
 
-# wait
+wait
 
 for sigma_W in  0.005 0.01 0.05 0.1 0.2 0.3 0.5 1.0 2.0 2.5 5.0
 do
@@ -61,6 +61,15 @@ do
 
 done
 
+wait
+
+# for seed in  1 2 3 4 5 6 7 8 9 10
+# do
+        
+#     nohup python -u main.py --seed $seed > nohup.txt 2>&1 &
+#     sleep 0.1
+    
+# done
 
 
 # for rho in  0.0 0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9 1.0

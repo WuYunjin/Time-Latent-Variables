@@ -67,7 +67,7 @@ class SyntheticDataset(object):
         for _ in range(max_lag):
             A_xx = np.zeros(shape=(num_X,num_X)) # x->x
             while abs(A_xx).sum() == 0: # may be used to control the sparsity of generated DAG
-                A_xx = np.tril( np.random.randint(low=0,high=2, size=(num_X,num_X)), k=-1) # set k=-1 to exclude the diagonal elements
+                A_xx = np.tril( np.random.randint(low=0,high=2, size=(num_X,num_X)), k=0) # set k=-1 to exclude the diagonal elements, but in our case time-series is usually self-caused, so we keep the diagonal elements.
 
             groudtruth.append(A_xx)
 

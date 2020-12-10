@@ -45,7 +45,7 @@ def plot_recovered_graph(W_est, W, title=None, display_mode=False ,save_name=Non
         W_est: predicted graph, W_est[i,j] means i->j.
 
     """
-    if W:
+    if W is not None:
         fig, (ax1, ax2) = plt.subplots(figsize=(10, 4), ncols=2)
 
         ax1.set_title('recovered_graph')
