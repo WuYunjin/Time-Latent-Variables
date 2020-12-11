@@ -63,7 +63,7 @@ done
 
 wait
 
-# for seed in  1 2 3 4 5 6 7 8 9 10
+# for seed in  100 200 300 400 500 600 700 800 900 1000
 # do
         
 #     nohup python -u main.py --seed $seed > nohup.txt 2>&1 &

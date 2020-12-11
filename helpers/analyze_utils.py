@@ -46,7 +46,7 @@ def plot_recovered_graph(W_est, W, title=None, display_mode=False ,save_name=Non
 
     """
     if W is not None:
-        fig, (ax1, ax2) = plt.subplots(figsize=(10, 4), ncols=2)
+        fig, (ax1, ax2) = plt.subplots(figsize=(20, 8), ncols=2)
 
         ax1.set_title('recovered_graph')
         ax1.set_xlabel('Effects')

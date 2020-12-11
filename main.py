@@ -81,10 +81,13 @@ def synthetic():
         _logger.info('Under threshold:{}'.format(t/10))
         _logger.info(F1(estimate_A.T,groudtruth_A.T,threshold=t/10))
 
+    estimate_A_all = model.posterior_A.probs.cpu().data.numpy()
+
     # Visualizations
     for k in range(args.max_lag):
         # Note that in our implementation, A_ij=1 means j->i, but in the plot_recovered_graph A_ij=1 means i->j, so transpose A
-        plot_recovered_graph(estimate_A[k].T,groudtruth_A[k].T,title='Lag = {}'.format(k+1),display_mode=False,save_name=output_dir+'/lag_{}.png'.format(k))
+        plot_recovered_graph(estimate_A[k].T,groudtruth_A[k].T,title='Lag = {}'.format(k+1),display_mode=False,save_name=output_dir+'/A_lag_{}.png'.format(k))
+        plot_recovered_graph(estimate_A_all[k].T,dataset.A[k].T,title='Lag = {}'.format(k+1),display_mode=False,save_name=output_dir+'/All_lag_{}.png'.format(k))
 
 
     _logger.info('All Finished!')

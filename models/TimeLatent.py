@@ -71,7 +71,7 @@ class TimeLatent(object):
         estimate_A[:,m:,:] = torch.tensor([0],device=self.device)
         # Set the diagonal
         for i in range(m):
-            estimate_A[:,m+i,m+i] = torch.tensor([1],device=self.device)
+            estimate_A[:,m+i,m+i] = torch.rand(size=[1],device=self.device)
 
         estimate_A = estimate_A.requires_grad_(True)
         
