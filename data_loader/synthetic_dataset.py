@@ -104,7 +104,7 @@ class SyntheticDataset(object):
                 raise ValueError('Undefined noise_distribution type')
 
         # Consider a time series coming from the following data generating process
-        for t in range(max_lag+1, T):
+        for t in range(max_lag+1, T+1):
 
             tmp_X = np.zeros(num_X)
             tmp_Z = np.zeros(num_Z)
