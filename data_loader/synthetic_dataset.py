@@ -129,11 +129,12 @@ class SyntheticDataset(object):
 
             tmp_X = tmp_X/(np.max(abs(tmp_X))  + 1e-31) # to avoid 0/0
             
-            data[t,0:num_X] = tmp_X + np.random.normal(size=num_X) 
+            # data[t,0:num_X] = tmp_X + np.random.normal(size=num_X)
+            data[t-1,0:num_X] += tmp_X 
             if num_Z:
                 tmp_Z = tmp_Z/(np.max(abs(tmp_Z)) + 1e-31 ) # to avoid 0/0
-                data[t,num_X:N] = tmp_Z + np.random.normal(size=num_Z)
-            
+                # data[t,num_X:N] = tmp_Z + np.random.normal(size=num_Z)
+                data[t-1,num_X:N] += tmp_Z 
 
         X = data[-num_samples:,0:num_X]
         Z = data[-num_samples:,num_X:N]
