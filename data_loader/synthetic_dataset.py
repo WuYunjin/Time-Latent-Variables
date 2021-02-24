@@ -80,7 +80,7 @@ class SyntheticDataset(object):
                 np.concatenate((A_zx,A_zz),axis=1) ), axis=0) 
             A.append(tmp_A)
             
-            tmp_W = np.random.randn(num_X+num_Z,num_X+num_Z) * tmp_A
+            tmp_W = np.random.normal(loc=0.0,scale=0.1,size=(num_X+num_Z,num_X+num_Z)) * tmp_A 
             # tmp_W = np.random.normal(loc = np.zeros((num_X+num_Z,num_X+num_Z)), scale = np.ones((num_X+num_Z,num_X+num_Z))) * tmp_A
 
             W.append(tmp_W)
@@ -93,18 +93,48 @@ class SyntheticDataset(object):
 
         # Make data stable
         burn_in = 5000
-        T = num_samples + burn_in
+        T = burn_in
         
         N = num_X+num_Z
 
         if noise_distribution == 'normal':
             # Initialize Gaussian noise for observed varaibles and hidden variables
-            data = np.random.normal(size=(T,N)) 
+            noise = np.random.normal(size=(T,N)) 
         else:
                 raise ValueError('Undefined noise_distribution type')
 
-        # Consider a time series coming from the following data generating process
-        for t in range(max_lag+1, T):
+        data = np.zeros(shape=(T,N))
+
+        # For data(t=1)
+        data[0] = noise[0]
+
+        # For data(t=2,...,max_lag)
+        for t in range(2,max_lag+1):
+            
+            tmp_X = np.zeros(num_X)
+            tmp_Z = np.zeros(num_Z)
+            
+            for lag in range(1,t):
+                
+                coefficient = W[lag-1]
+
+                coefficient_11 = coefficient[0:num_X,0:num_X] # i.e., A_11⊙W_11
+                coefficient_12 = coefficient[0:num_X,num_X:N] # i.e., A_12⊙W_12
+                coefficient_22 = coefficient[num_X:N,num_X:N] # i.e., A_22⊙W_22
+
+                
+                tmp_X +=  (  np.matmul(data[t-lag-1,0:num_X],coefficient_11.T) +
+                             np.matmul(data[t-lag-1,num_X:N],coefficient_12.T) )
+                            
+                if num_Z:
+                    tmp_Z +=   np.matmul(data[t-lag-1,num_X:N],coefficient_22.T) 
+
+            data[t-1,0:num_X] = tmp_X + noise[t-1,0:num_X]
+            data[t-1,num_X:N] = tmp_Z +noise[t-1,num_X:N]
+
+            
+        # For data(t=max_lag+1,T)
+        for t in range(max_lag+1, T+1):
 
             tmp_X = np.zeros(num_X)
             tmp_Z = np.zeros(num_Z)
@@ -125,15 +155,8 @@ class SyntheticDataset(object):
                 if num_Z:
                     tmp_Z +=   np.matmul(data[t-lag-1,num_X:N],coefficient_22.T) 
 
-            # we normalize Z AND X, in case it become larger and larger when coefficient>1.
-
-            tmp_X = tmp_X/(np.max(abs(tmp_X))  + 1e-31) # to avoid 0/0
-            
-            data[t,0:num_X] = tmp_X + np.random.normal(size=num_X) 
-            if num_Z:
-                tmp_Z = tmp_Z/(np.max(abs(tmp_Z)) + 1e-31 ) # to avoid 0/0
-                data[t,num_X:N] = tmp_Z + np.random.normal(size=num_Z)
-            
+            data[t-1,0:num_X] = tmp_X + noise[t-1,0:num_X]
+            data[t-1,num_X:N] = tmp_Z +noise[t-1,num_X:N]
 
         X = data[-num_samples:,0:num_X]
         Z = data[-num_samples:,num_X:N]

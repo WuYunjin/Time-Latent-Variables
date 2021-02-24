@@ -46,7 +46,7 @@ class TimeLatent(object):
         
         # Set the diagonal
         for i in range(m):
-            prior_A[:,m+i,m+i] = torch.tensor([1],device=self.device)
+            prior_A[:,m+i,m+i] = torch.tensor([rho],device=self.device)
 
         self.prior_A = RelaxedBernoulli( temperature= temperature, probs=prior_A )
 
@@ -65,31 +65,34 @@ class TimeLatent(object):
         # Set up posteriors
         K = self.max_lag
         m = self.num_X
+        
+        rho = self.prior_rho_A
+        sigma = self.prior_sigma_W
 
         temperature = torch.tensor([self.temperature], device=self.device)
-        estimate_A = torch.rand(size=(K,2*m,2*m), device=self.device)
+        estimate_A = rho*torch.rand(size=(K,2*m,2*m), device=self.device)
         estimate_A[:,m:,:] = torch.tensor([0],device=self.device)
         # Set the diagonal
         for i in range(m):
-            estimate_A[:,m+i,m+i] = torch.rand(size=[1],device=self.device)
+            estimate_A[:,m+i,m+i] = torch.tensor([rho],device=self.device)
 
         estimate_A = estimate_A.requires_grad_(True)
         
         self.posterior_A = RelaxedBernoulli(temperature=temperature, probs=estimate_A)
 
-        estimate_W_scale = torch.rand(size=(K,2*m,2*m),device=self.device)
+        estimate_W_scale = sigma*torch.ones( size=(K,2*m,2*m),device=self.device )
         estimate_W_scale[:,m:,:] = torch.tensor([0],device=self.device)
         # Set the diagonal
         for i in range(m):
-            estimate_W_scale[:,m+i,m+i] = torch.rand(size=[1],device=self.device)
+            estimate_W_scale[:,m+i,m+i] = torch.tensor([sigma],device=self.device)
         
         estimate_W_scale  = estimate_W_scale.requires_grad_(True)
 
         estimate_W_loc = torch.rand(size=(K,2*m,2*m),device=self.device)
         estimate_W_loc[:,m:,:] = torch.tensor([0],device=self.device)
-        # Set the diagonal
-        for i in range(m):
-            estimate_W_loc[:,m+i,m+i] = torch.rand(size=[1],device=self.device)
+        # # Set the diagonal
+        # for i in range(m):
+        #     estimate_W_loc[:,m+i,m+i] = torch.rand(size=[1],device=self.device)
         
         estimate_W_loc  = estimate_W_loc.requires_grad_(True)
         self.posterior_W = Normal(loc= estimate_W_loc, scale=estimate_W_scale ) 
@@ -129,21 +132,18 @@ class TimeLatent(object):
         
         ln_p_ZT = torch.zeros(size=[m],device=self.device)
         T = self.num_samples
-        for t in range(K+1,T+1):
-            A_22 = A[:,m:,m:]
-            W_22 = W[:,m:,m:]
+        A_22 = A[:,m:,m:]
+        W_22 = W[:,m:,m:]
+        
+        mean_t = []
+        for i in range(1,K+1):
+            A_22_i = torch.diagonal(A_22[i-1])
+            W_22_i = torch.diagonal(W_22[i-1])
+            mean_t.append(Z[K-i:T-i]*A_22_i *W_22_i)
 
-            mean_t = []
-            for i in range(1,K+1):
-                A_22_i = torch.diagonal(A_22[i-1])
-                W_22_i = torch.diagonal(W_22[i-1])
-                mean_t.append(Z[t-1-i]*A_22_i *W_22_i)
+        p_Zt = Normal(loc=sum(mean_t),scale=sigma_Z)
+        ln_p_ZT = p_Zt.log_prob(Z[K:]).sum(0)
 
-            p_Zt = Normal(loc=sum(mean_t),scale=sigma_Z)
-            # p_Z.append(p_Zt)
-            ln_p_ZT += p_Zt.log_prob(Z[t-1])
-
-        # self.p_Z = p_Z
         return  (ln_p_ZT.sum() + ln_p_ZK.sum() + ln_p_Z1.sum()) + ln_p_A + ln_p_W
         
 
@@ -181,24 +181,20 @@ class TimeLatent(object):
             Sum_X_mu += ((X[t-1]-mu)**2).sum()
 
         # K+1 <= t <= T
-        for t in range(K+1,T+1):
-            A_11 = A[:,:m,:m]
-            W_11 = W[:,:m,:m]
+        A_11 = A[:,:m,:m]
+        W_11 = W[:,:m,:m]
 
-            A_12 = A[:,:m,m:]
-            W_12 = A[:,:m,m:]
+        A_12 = A[:,:m,m:]
+        W_12 = A[:,:m,m:]
+        mu = []
+        for i in range(1,K+1):
+            A_11_i = A_11[i-1]
+            W_11_i = W_11[i-1]
+            A_12_i = A_12[i-1]
+            W_12_i = W_12[i-1]
+            mu.append( torch.matmul(X[K-i:T-i], (A_11_i *W_11_i).t() ) + torch.matmul(Z[K-i:T-i], (A_12_i *W_12_i).t()) )
 
-            mu = torch.zeros(size=[m],device=self.device)
-            for i in range(1,K+1):
-                A_11_i = A_11[i-1]
-                W_11_i = W_11[i-1]
-                A_12_i = A_12[i-1]
-                W_12_i = W_12[i-1]
-
-                mu += torch.matmul(X[t-1-i], (A_11_i *W_11_i).t() )+torch.matmul(Z[t-1-i], (A_12_i *W_12_i).t() )
-
-            Sum_X_mu += ((X[t-1]-mu)**2).sum()
-
+        Sum_X_mu += ((X[K:T+1]-sum(mu))**2).sum()
 
         return  -T/2* torch.log(2* torch.tensor([np.math.pi],device=self.device)) - T/2* torch.log( sigma*sigma ).sum() - 1/( 2*(sigma*sigma).sum()) *Sum_X_mu
 
@@ -234,15 +230,6 @@ class TimeLatent(object):
                 A_22_i = torch.diagonal(A_22[i-1])
                 W_22_i = torch.diagonal(W_22[i-1])
                 mean_t.append(Z[t-1-i]*A_22_i *W_22_i)
-
-            # # Normalize mean_t, otherwise it will too large and leads to large Z(t) even NAN.
-            # mean_t = F.normalize(sum(mean_t),dim=0)
-            
-            # q_Zt = Normal(loc=mean_t,scale=sigma_Z)
-            # q_Z.append(q_Zt)
-            # Z.append(q_Zt.rsample())
-            # ln_q_Z.append(q_Zt.log_prob(Z[t-1]))
-
             
             q_Zt = Normal(loc=sum(mean_t),scale=sigma_Z)
             # q_Z.append(q_Zt)
@@ -265,13 +252,6 @@ class TimeLatent(object):
                 W_22_i = torch.diagonal(W_22[i-1])
                 mean_t.append(Z[t-1-i]*A_22_i *W_22_i)
 
-            # # Normalize mean_t, otherwise it will too large and leads to large Z(t) even NAN.
-            # mean_t = F.normalize(sum(mean_t),dim=0)
-            # q_Zt = Normal(loc=mean_t,scale=sigma_Z)
-            # q_Z.append(q_Zt)
-            # Z.append(q_Zt.rsample())
-            # ln_q_Z.append(q_Zt.log_prob(Z[t-1]))
-
             q_Zt = Normal(loc=sum(mean_t),scale=sigma_Z)
             # q_Z.append(q_Zt)
             Z_t = q_Zt.rsample()
@@ -282,7 +262,7 @@ class TimeLatent(object):
             Z.append(Z_t)
 
         # self.q_Z = q_Z
-        return Z, ln_q_Z
+        return torch.stack(Z,0), ln_q_Z
 
     def ln_q_Z(self,Z):
         
@@ -344,7 +324,7 @@ if __name__ == '__main__':
     num_samples = 1000
     X = torch.randn(size=(num_samples,num_X))
 
-    model = TimeLatent(num_X, 3, num_samples, 'cpu', 0.5, 1.0, 2.0, 1.0, 1.0)
+    model = TimeLatent(num_X, 3, num_samples, 'cpu', 0.0, 1.0, 0.5, 1.0, 1.0)
     
     loss = model.loss(X)
     print(loss)
