@@ -36,49 +36,67 @@ def plot_losses(data, display_mode=False ,save_name=None):
         plt.close()
 
 
-
 def plot_recovered_graph(W_est, W, title=None, display_mode=False ,save_name=None):
 
     """
      Args:
-        W: ground truth graph, W[i,j] means i->j.
-        W_est: predicted graph, W_est[i,j] means i->j.
-
+        W: ground truth graph, W[i,j] means j->i.
+        W_est: predicted graph, W_est[i,j] means j->i.
     """
     if W is not None:
-        fig, (ax1, ax2) = plt.subplots(figsize=(20, 8), ncols=2)
+        lag = len(W)
+        fig, (ax1, ax2) = plt.subplots(figsize=(4*lag,8), nrows=2, ncols=lag)
 
-        ax1.set_title('recovered_graph')
-        ax1.set_xlabel('Effects')
-        ax1.set_ylabel('Causes')
-        map1 = ax1.imshow(W_est, cmap='Blues', interpolation='none')
-        for i in range(len(W_est)):
-            for j in range(len(W_est)):
-                text = ax1.text(j, i, round(W_est[i, j],2),
-                            ha="center", va="center", color="r")
-        fig.colorbar(map1, ax=ax1)
+        for l in range(lag):
 
-        ax2.set_title('true_graph')
-        ax2.set_xlabel('Effects')
-        ax2.set_ylabel('Causes')
-        map2 = ax2.imshow(W, cmap='Blues', interpolation='none')
-        fig.colorbar(map2, ax=ax2)
+            ax1[l].set_title('recovered_graph')
+            ax1[l].set_ylabel('Effects')
+            ax1[l].set_xlabel('Causes')
+            map1 = ax1[l].imshow(W_est[l], cmap='Blues', interpolation='none')
+            for i in range(len(W_est[l])):
+                for j in range(len(W_est[l])):
+                    text = ax1[l].text(j, i, round(W_est[l][i, j],2),
+                                ha="center", va="center", color="r")
+            fig.colorbar(map1, ax=ax1[l])
 
-        
-        fig.subplots_adjust(wspace=0.3)
+            ax2[l].set_title('true_graph')
+            ax2[l].set_ylabel('Effects')
+            ax2[l].set_xlabel('Causes')
+            map2 = ax2[l].imshow(W[l], cmap='Blues', interpolation='none')
+            fig.colorbar(map2, ax=ax2[l])
+
+            
+        fig.subplots_adjust(wspace=0.3,hspace=0.3)
 
     else:
-        fig, ax1 = plt.subplots(figsize=(10, 4), ncols=1)
 
-        ax1.set_title('recovered_graph')
-        ax1.set_xlabel('Effects')
-        ax1.set_ylabel('Causes')
-        map1 = ax1.imshow(W_est, cmap='Blues', interpolation='none')
-        for i in range(len(W_est)):
-            for j in range(len(W_est)):
-                text = ax1.text(j, i, round(W_est[i, j],2),
-                            ha="center", va="center", color="r")
-        fig.colorbar(map1, ax=ax1)
+        lag = len(W_est)
+        fig, ax1 = plt.subplots(figsize=(8*lag, 20), nrows=1, ncols=lag)
+
+        if lag >1:
+            for l in range(lag):
+
+                ax1[l].set_title('recovered_graph')
+                ax1[l].set_ylabel('Effects')
+                ax1[l].set_xlabel('Causes')
+                ax1[l].imshow(W_est[l], cmap='Blues', interpolation='none')
+                for i in range(len(W_est[l])):
+                    for j in range(len(W_est[l])):
+                        text = ax1[l].text(j, i, round(W_est[l][i, j],2),
+                                    ha="center", va="center", color="r")
+        else:
+            
+            ax1.set_title('recovered_graph')
+            ax1.set_ylabel('Effects')
+            ax1.set_xlabel('Causes')
+            ax1.imshow(W_est[0], cmap='Blues', interpolation='none')
+            for i in range(len(W_est[0])):
+                for j in range(len(W_est[0])):
+                    text = ax1.text(j, i, round(W_est[0][i, j],2),
+                                ha="center", va="center", color="r")
+            
+        fig.subplots_adjust(wspace=0.3,hspace=0.3)
+
         
     if title is not None:
         fig.suptitle(title)
@@ -89,7 +107,8 @@ def plot_recovered_graph(W_est, W, title=None, display_mode=False ,save_name=Non
         
     if display_mode:
         plt.show()
-        plt.close()
+
+    plt.close()
 
 def plot_ROC_curve(A_est, A_true,display_mode=False,save_name=None):
     # Referred from :https://blog.csdn.net/hesongzefairy/article/details/104302499 
